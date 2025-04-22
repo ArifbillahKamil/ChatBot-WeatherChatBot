@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatBot</title>
+    <link rel="stylesheet" href="style.css" />
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.js"
+      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      body {
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      #chatContainer {
+        width: 80%;
+        max-width: 600px;
+        height: 60vh;
+        overflow-y: auto;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: white;
+      }
+
+      input {
+        font-size: 1.2em;
+        text-align: center;
+        color: whitesmoke;
+        font-family: "Courier New", Courier, monospace;
+        background-color: #554e53;
+        border-radius: 20px;
+        border: none;
+        padding: 15px;
+        width: 100%;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+      }
+
+      #sendButton {
+        font-size: 1.2em;
+        text-align: center;
+        color: whitesmoke;
+        font-family: "Courier New", Courier, monospace;
+        background-color: #554e53;
+        border-radius: 20px;
+        border: none;
+        padding: 15px;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      #sendButton:hover {
+        background-color: #6a6268;
+      }
+
+      h1 {
+        color: #554e53;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .botText {
+        color: #2c3e50;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #ecf0f1;
+        border-radius: 10px;
+        display: inline-block;
+        max-width: 80%;
+      }
+
+      .userText {
+        color: white;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #3498db;
+        border-radius: 10px;
+        display: inline-block;
+        max-width: 80%;
+        float: right;
+        text-align: right;
+      }
+
+      .clear {
+        clear: both;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ChatBot App</h1>
+    <div id="chatContainer">
+      <p class="botText">Hi There! How can I help you today?</p>
+    </div>
+    <div id="userInputContainer" style="width: 80%; max-width: 600px">
+      <input
+        type="text"
+        name="userMessage"
+        id="userInput"
+        placeholder="Type your message here..."
+      />
+      <button id="sendButton">Send</button>
+    </div>
+
+    <script>
+      function getBotResponse() {
+        var userInput = $("#userInput").val();
+        if (userInput.trim() === "") return;
+
+        var userHTML =
+          "<p class='userText'>" + userInput + "</p><div class='clear'></div>";
+        $("#chatContainer").append(userHTML);
+        $("#userInput").val("");
+
+        // Scroll ke bawah
+        $("#chatContainer").scrollTop($("#chatContainer")[0].scrollHeight);
+
+        $.get("/get", { userMessage: userInput })
+          .done(function (data) {
+            var botHTML;
+            if (data.type === "weather") {
+              botHTML =
+                "<p class='botText'>Weather in " +
+                data.data.city +
+                ": " +
+                data.data.temp +
+                "°C, " +
+                data.data.description +
+                "</p><div class='clear'></div>";
+            } else {
+              botHTML =
+                "<p class='botText'>" +
+                data.data +
+                "</p><div class='clear'></div>";
+            }
+            $("#chatContainer").append(botHTML);
+            $("#chatContainer").scrollTop($("#chatContainer")[0].scrollHeight);
+          })
+          .fail(function () {
+            var botHTML =
+              "<p class='botText'>Sorry, I'm having trouble connecting to the service.</p><div class='clear'></div>";
+            $("#chatContainer").append(botHTML);
+            $("#chatContainer").scrollTop($("#chatContainer")[0].scrollHeight);
+          });
+      }
+
+      $("#userInput").keypress(function (e) {
+        if (e.which == 13) {
+          getBotResponse();
+        }
+      });
+
+      $("#sendButton").click(function () {
+        getBotResponse();
+      });
+    </script>
+  </body>
+</html>
